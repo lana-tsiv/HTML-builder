@@ -17,6 +17,7 @@ const generateHtml = async () => {
     }
   );
 
+  let files = template;
   for (const elem of template.match(/\{\{+[a-w]+}}/g)) {
     const component = await fsPromises.readFile(
       path.join(__dirname, "components", `${elem.slice(2, -2)}.html`),
@@ -26,29 +27,27 @@ const generateHtml = async () => {
       }
     );
 
-    const file = template.replace(`${elem}`, `${component}`);
+    files = files.replace(`${elem}`, `${component}`);
 
-    await fsPromises.writeFile(path.join(folderPath, "index.html"), file);
+    await fsPromises.writeFile(path.join(folderPath, "index.html"), files);
   }
 };
 
 const generateCss = async () => {
-  fsPromises
-    .readdir(pathToStyles, { withFileTypes: true })
-    .then((files) => {
-      fsPromises.writeFile(buildPath, "").then(() => {
-        for (const file of files) {
-          if (file.isFile() && path.extname(file.name) === ".css") {
-            const filePath = path.join(pathToStyles, file.name);
-            fsPromises.readFile(filePath).then((data) => {
-              fsPromises
-                .appendFile(buildPath, data)
-                .catch((err) => console.log(err));
-            });
-          }
+  fsPromises.readdir(pathToStyles, { withFileTypes: true }).then((files) => {
+    fsPromises.writeFile(buildPath, "").then(() => {
+      for (const file of files) {
+        if (file.isFile() && path.extname(file.name) === ".css") {
+          const filePath = path.join(pathToStyles, file.name);
+          fsPromises.readFile(filePath).then((data) => {
+            fsPromises
+              .appendFile(buildPath, data)
+              .catch((err) => console.log(err));
+          });
         }
-      });
+      }
     });
+  });
 };
 
 const copyFolder = (folderFromAssets, folderToAssets) => {
